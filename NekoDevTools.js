@@ -20,8 +20,8 @@ NDT.RT = NDT.VM.runtime;
 
 // Info/Option
 NDT.Info = {};
-NDT.Info.Ver = '0.0.19';
-NDT.Info.Message = `ハット関係のNDTEventを追加`;
+NDT.Info.Ver = '0.0.20';
+NDT.Info.Message = `NDT.Event.Messageが正常に動作していなかった問題を修正`;
 NDT.Option = {};
 NDT.Option.DisCheck = false;
 NDT.Option.DisNDTEvent = false;
@@ -134,7 +134,7 @@ NDT.Event.Stop = function() {
 }
 NDT.Event.Message = function(Message) {
     ChkType('s', Message);
-    startHats("event_whenbroadcastreceived", { BROADCAST_OPTION: Message} );
+    NDT.RT.startHats("event_whenbroadcastreceived", { BROADCAST_OPTION: Message} );
 }
 
 // Sprite
