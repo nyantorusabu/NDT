@@ -20,8 +20,8 @@ NDT.RT = NDT.VM.runtime;
 
 // Info/Option
 NDT.Info = {};
-NDT.Info.Ver = '0.0.20';
-NDT.Info.Message = `NDT.Event.Messageが正常に動作していなかった問題を修正`;
+NDT.Info.Ver = '0.0.21';
+NDT.Info.Message = `NDTEventのMESSAGE_のMessIDを大文字に統一`;
 NDT.Option = {};
 NDT.Option.DisCheck = false;
 NDT.Option.DisNDTEvent = false;
@@ -116,10 +116,10 @@ NDT.RT.startHats = function(HatOpc, Option, Target) {
     const Mes = (HatID == 'EVENT_WHENBROADCASTRECEIVED');
     const Flag = (HatID == 'EVENT_WHENFLAGCLICKED');
     const Eve = NDT.NDTEvent.Dispatch;
-    if (Mes) Eve('MESSAGE_BEFORE', {MesID: Option.BROADCAST_OPTION, SprID: SprID})
+    if (Mes) Eve('MESSAGE_BEFORE', {MesID: Option.BROADCAST_OPTION.toUpperCase(), SprID: SprID})
     if (Flag) Eve('FLAG_BEFORE', {Option: Option, SprID: SprID})
     const Res = NDT.SC.StartHats.call(this, HatOpc, Option, Target);
-    if (Mes) Eve('MESSAGE_AFTER', {MesID: Option.BROADCAST_OPTION, SprID: SprID})
+    if (Mes) Eve('MESSAGE_AFTER', {MesID: Option.BROADCAST_OPTION.toUpperCase(), SprID: SprID})
     if (Flag) Eve('FLAG_AFTER', {Option: Option, SprID: SprID})
     return Res;
 }
