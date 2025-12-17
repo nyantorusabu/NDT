@@ -18,7 +18,7 @@ Issueの立て方わからんかったらScratchかDiscordで伝えてくださ�
 - ``NDT.Sprite`` or ``NDT.Spr`` - スプライト関係。
 - ``NDT.Sprite.Variable`` or ``NDT.Sprite.Var`` - ローカル変数関係。
 - ``NDT.Variable`` or ``NDT.Var`` - グローバル変数関係。
-- ``NDT.NDTEvent`` or ``NDT.NEve`` - NDTのイベント関係
+- ``NDT.NDTEvent`` or ``NDT.NEve`` - NDTEvent関係
 - ``NDT.Option`` - 設定
 - ``NDT.Info`` - NDTの情報
 # 設定できる項目

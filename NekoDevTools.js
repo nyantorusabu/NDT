@@ -20,8 +20,8 @@ NDT.RT = NDT.VM.runtime;
 
 // Info/Option
 NDT.Info = {};
-NDT.Info.Ver = '0.0.21';
-NDT.Info.Message = `NDTEventのMESSAGE_のMessIDを大文字に統一`;
+NDT.Info.Ver = '0.0.22';
+NDT.Info.Message = `スプライトを削除できない問題を修正`;
 NDT.Option = {};
 NDT.Option.DisCheck = false;
 NDT.Option.DisNDTEvent = false;
@@ -124,7 +124,8 @@ NDT.RT.startHats = function(HatOpc, Option, Target) {
     return Res;
 }
 
-// NDTMain
+
+// ========== NDTMain ==========
 // Event
 NDT.Event.Flag = function() {
     NDT.VM.greenFlag();
@@ -173,15 +174,12 @@ NDT.Spr.Upload = async function() {
 NDT.Spr.Delete = function(SprID) {
     ChkType('s', SprID);
     const Id = NDT.Spr.Get(SprID).id;
-    NDT.VM.deleteSprite(SprID);
+    NDT.VM.deleteSprite(Id);
 }
 NDT.Spr.Rename = function(SprID, NewName) {
     ChkType('s', SprID);
     ChkType('s', NewName);
-    const Id = NDT.Spr.Get(SprID).id;
-    if (!Id) return;
-    const Pos = NDT.Spr.IDList.indexOf(Id);
-    NDT.Spr.All[Pos].sprite.name = NewName;
+    NDT.Spr.Get(SprID).name = NewName;
 }
 NDT.Spr.Visible = function(SprID, Show = null) {
     const Spr = NDT.Spr.Get(SprID);
