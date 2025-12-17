@@ -39,7 +39,7 @@ NDTはScratchのイベントに加えて色々独自のイベントがありま�
 - ``FLAG_AFTER`` - 緑の旗が押された後に発火します
 - ``MESSAGE_BEFORE`` - 何らかのメッセージが送信される前に発火します
 - ``MESSAGE_AFTER`` - 何らかのメッセージが送信された後に発火します
-# サンプル
+# シンプルなサンプル
 1. ``NDT.Eve.Flag()`` - 緑の旗を押す
 2. ``NDT.Eve.Stop()`` - すべて停止
 3. ``NDT.Spr.Rename(NDT.Var.Get('hoge'), NDT.Var.Get('hogege'))`` - スプライト名がグローバル変数"hoge"内の値になっているスプライトの名前をグローバル変数"hogege"内の値にする

@@ -20,8 +20,8 @@ NDT.RT = NDT.VM.runtime;
 
 // Info/Option
 NDT.Info = {};
-NDT.Info.Ver = '0.0.22';
-NDT.Info.Message = `スプライトを削除できない問題を修正`;
+NDT.Info.Ver = '0.0.23';
+NDT.Info.Message = `NDTVariableを追加`;
 NDT.Option = {};
 NDT.Option.DisCheck = false;
 NDT.Option.DisNDTEvent = false;
@@ -42,6 +42,7 @@ NDT.Spr.List = {};
 NDT.Variable = {};
 NDT.Var = NDT.Variable;
 NDT.List = {};
+NDT.Render = {};
 
 
 // Reload
@@ -85,24 +86,24 @@ NDT.NDTEvent.Dispatch = function(EveID, Args = {}) {
     Eve.dispatchEvent(new NDTEvent(EveID, Args));
 };
 
-function NDTValiable() {
-    if (!NDT.Spr.NameList.includes('NDT')) return;
-	const Spr = NDT.Spr.Get('NDT');
-	const List = NDT.Spr.Var.NameList('NDT');
+function NDTVariable() {
+    if (!NDT.Var.NameList().includes('NDT')) return;
+    if (NDT.Var.Get('NDT') !== 1) NDT.Var.Set('NDT', 1);
+	const List = NDT.Var.NameList();
 	const Vars = {
-		Active: 1,
 		Ver: NDT.Info.Ver,
 		Update: NDT.Info.Message,
 	}
 	for (const [VarID, Value] of Object.entries(Vars)) {
-		if (!List.includes(VarID)) NDT.Spr.Var.Create('NDT', VarID);
-		if (NDT.Spr.Var.Get('NDT', VarID) !== Value) NDT.Spr.Var.Set('NDT', VarID, Value);
+        const LsVID = `NDT.${VarID}`;
+		if (!List.includes(LsVID)) NDT.Var.Create(LsVID);
+		if (NDT.Var.Get(LsVID) !== Value) NDT.Var.Set(LsVID, Value);
 	}
 }
 
 NDT.SC.Step = NDT.RT._step;
 NDT.RT._step = function() {
-    NDTValiable();
+    NDTVariable();
     NDT.NDTEvent.Dispatch('STEP_BEFORE');
     NDT.SC.Step.call(this);
     NDT.NDTEvent.Dispatch('STEP_AFTER');
