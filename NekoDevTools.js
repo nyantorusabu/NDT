@@ -20,8 +20,8 @@ NDT.RT = NDT.VM.runtime;
 
 // Info/Option
 NDT.Info = {};
-NDT.Info.Ver = '0.0.23';
-NDT.Info.Message = `NDTVariableを追加`;
+NDT.Info.Ver = '0.0.24';
+NDT.Info.Message = `ユーザースクリプトよりNDTVariableの方が優先されるように変更`;
 NDT.Option = {};
 NDT.Option.DisCheck = false;
 NDT.Option.DisNDTEvent = false;
@@ -103,8 +103,8 @@ function NDTVariable() {
 
 NDT.SC.Step = NDT.RT._step;
 NDT.RT._step = function() {
-    NDTVariable();
     NDT.NDTEvent.Dispatch('STEP_BEFORE');
+    NDTVariable();
     NDT.SC.Step.call(this);
     NDT.NDTEvent.Dispatch('STEP_AFTER');
 }
