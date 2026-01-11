@@ -20,14 +20,20 @@ NDT.RT = NDT.VM.runtime;
 
 // Info/Option
 NDT.Info = {};
-NDT.Info.Ver = '0.0.24';
-NDT.Info.Message = `ユーザースクリプトよりNDTVariableの方が優先されるように変更`;
+NDT.Info.Ver = '0.1.0';
+NDT.Info.Message = `NDT.Sprite.Assetを追加`;
 NDT.Option = {};
 NDT.Option.DisCheck = false;
 NDT.Option.DisNDTEvent = false;
+NDT.Option.DisLog = false;
 
 
 // Obj
+NDT.NDTEvent = {};
+NDT.NEve = NDT.NDTEvent;
+NDT.Project = {};
+NDT.Pro = NDT.Project;
+NDT.Pro.Load = {};
 NDT.Sprite = {};
 NDT.Spr = NDT.Sprite;
 NDT.Event = {};
@@ -39,6 +45,12 @@ NDT.Spr.Eve = NDT.Spr.Event;
 NDT.Spr.Variable = {};
 NDT.Spr.Var = NDT.Spr.Variable;
 NDT.Spr.List = {};
+NDT.Spr.Asset = {};
+NDT.Spr.Ast = NDT.Spr.Asset;
+NDT.Spr.Ast.Costume = {};
+NDT.Spr.Ast.Cos = NDT.Spr.Ast.Costume;
+NDT.Spr.Ast.Sound = {};
+NDT.Spr.Ast.Sou = NDT.Spr.Ast.Sound;
 NDT.Variable = {};
 NDT.Var = NDT.Variable;
 NDT.List = {};
@@ -50,6 +62,7 @@ NDT.Reload = function() {
     NDT.Spr.All = NDT.VM.runtime.targets;
     NDT.Spr.IDList = NDT.Spr.All.map(s => s.id);
     NDT.Spr.NameList = NDT.Spr.All.map(s => s.getName());
+    NDT.Spr.Editing = NDT.VM.editingTarget;
 }
 NDT.Reload();
 NDT.RT.on('PROJECT_LOADED', () => {
@@ -72,8 +85,6 @@ class NDTEvent extends Event {
 	}
 }
 
-NDT.NDTEvent = {};
-NDT.NEve = NDT.NDTEvent;
 const Eve = new EventTarget();
 NDT.NDTEvent.Add = function(name, handler) {
     Eve.addEventListener(name, handler);
@@ -139,13 +150,35 @@ NDT.Event.Message = function(Message) {
     NDT.RT.startHats("event_whenbroadcastreceived", { BROADCAST_OPTION: Message} );
 }
 
+// Project
+NDT.Pro.Load.URL = async function(URL) {
+    ChkType('s', URL);
+    const res = await fetch(URL);
+    const pj = await res.arrayBuffer();
+    try {
+        await NDT.VM.loadProject(pj);
+    } catch (e) {
+        Log('e', e);
+    }
+}
+NDT.Pro.Load.ID = async function(ProID) {
+    ChkType('n', ProID);
+    const res = await fetch(`https://trampoline.turbowarp.org/api/projects/${ProID}`);
+    const data = await res.json();
+    const token = data.project_token;
+    try {
+        await NDT.Pro.Load.URL(`https://projects.scratch.mit.edu/${ProID}?token=${token}`);
+    } catch (e) {
+        Log('e', e);
+    }
+}
 // Sprite
 NDT.Spr.Get = function(SprID) {
     ChkType('s', SprID);
     const Sprites = NDT.Spr.All;
-    let Out = Sprites.find(s => s.id == SprID);
+    let Out = Sprites.find((s) => s.id == SprID);
     if (!Out) {
-        Out = Sprites.find(s => s.getName() == SprID);
+        Out = Sprites.find((s) => s.getName() == SprID);
         if (!Out) {
             Log('e', `${SprID}というスプライトは見つかりませんでした`);
             return;
@@ -166,7 +199,7 @@ NDT.Spr.Add = async function(URL) {
     try {
         await NDT.VM.addSprite(json);
     } catch (e) {
-        console.error(e);
+        Log('e', e);
     }
 }
 NDT.Spr.Upload = async function() {
@@ -197,6 +230,182 @@ NDT.Spr.Size = function(SprID, ToSize = null) {
         Spr.size = ToSize;
     }
     return Spr.size;
+}
+
+NDT.Spr.Ast.Cos.All = function(SprID) {
+	return NDT.Spr.Get(SprID).sprite.costumes;
+}
+NDT.Spr.Ast.Cos.NameList = function(SprID) {
+	return NDT.Spr.Ast.Cos.All(SprID).map((c) => c.name);
+}
+NDT.Spr.Ast.Cos.IDList = function(SprID) {
+	return NDT.Spr.Ast.Cos.All(SprID).map((c) => c.assetId);
+}
+NDT.Spr.Ast.Cos.Get = function(SprID, CosID) {
+	const CS = NDT.Spr.Ast.Cos;
+
+	let List = CS.All(SprID).find((c) => c.assetId == CosID);
+	if (!List) {
+		List = CS.All(SprID).find((c) => c.name == CosID);
+		if (!List) {
+			Log('e', `スプライト${SprID}に${CosID}というコスチュームは見つかりませんでした`);
+			return;
+		}
+	}
+	return List;
+}
+NDT.Spr.Ast.Cos.Index = function(SprID, CosID) {
+	const CS = NDT.Spr.Ast.Cos;
+	return CS.All(SprID).indexOf(CS.Get(SprID, CosID));
+}
+NDT.Spr.Ast.Cos.Add = async function(SprID, CosName, URL) {
+    ChkType('s', URL);
+	const targetId = NDT.Spr.Get(SprID).id;
+	const Str = NDT.RT.storage;
+
+	const res = await fetch(URL);
+	const blob = await res.blob();
+
+	if (!(blob.type === "image/png" || blob.type === "image/svg+xml")) {
+		Log('e', `無効な画像形式のファイルを読み込みました: ${blob.type}`);
+		return;
+	}
+	const assetType = (blob.type === "image/png") ?
+		Str.AssetType.ImageBitmap :
+		Str.AssetType.ImageVector;
+
+	const dataType =
+		blob.type === "image/svg+xml" ?
+		Str.DataFormat.SVG :
+		Str.DataFormat.PNG;
+
+	try {
+		const arrayBuffer = await new Promise((resolve, reject) => {
+			const fr = new FileReader();
+			fr.onload = () => resolve(fr.result);
+			fr.onerror = () =>
+				reject(new Error(`ArrayBufferの読み込みに失敗しました: ${fr.error}`));
+			fr.readAsArrayBuffer(blob);
+		});
+
+		const asset = Str.createAsset(
+			assetType,
+			dataType,
+			new Uint8Array(arrayBuffer),
+			null,
+			true
+		);
+		const md5ext = `${asset.assetId}.${asset.dataFormat}`;
+
+		await NDT.VM.addCostume(
+			md5ext, {
+				asset,
+				md5ext,
+				name: CosName,
+			},
+			targetId
+		);
+	} catch (e) {
+		Log('e', e);
+		return;
+	}
+}
+NDT.Spr.Ast.Cos.Delete = function(SprID, CosID) {
+	const target = NDT.Spr.Get(SprID);
+	const costumeIndex = NDT.Spr.Ast.Cos.Index(SprID, CosID);
+	if (costumeIndex < 0) return;
+
+	if (target.sprite.costumes.length > 0) {
+		target.deleteCostume(costumeIndex);
+	}
+}
+NDT.Spr.Ast.Cos.Rename = function(SprID, CosID, NewName) {
+	const target = NDT.Spr.Get(SprID);
+	const costumeIndex = NDT.Spr.Ast.Cos.Index(SprID, CosID);
+	if (costumeIndex < 0) return;
+
+	if (target.sprite.costumes.length > 0) {
+		target.renameCostume(costumeIndex, NewName);
+	}
+}
+NDT.Spr.Ast.Cos.Export = function(SprID, CosID) {
+	return NDT.Spr.Ast.Cos.Get(SprID, CosID).asset.encodeDataURI();
+}
+
+NDT.Spr.Ast.Sou.All = function(SprID) {
+	return NDT.Spr.Get(SprID).sprite.sounds;
+}
+NDT.Spr.Ast.Sou.NameList = function(SprID) {
+	return NDT.Spr.Ast.Sou.All(SprID).map((c) => c.name);
+}
+NDT.Spr.Ast.Sou.IDList = function(SprID) {
+	return NDT.Spr.Ast.Sou.All(SprID).map((c) => c.assetId);
+}
+NDT.Spr.Ast.Sou.Get = function(SprID, SouID) {
+	const SD = NDT.Spr.Ast.Sou;
+
+	let List = SD.All(SprID).find((c) => c.assetId == SouID);
+	if (!List) {
+		List = SD.All(SprID).find((c) => c.name == SouID);
+		if (!List) {
+			Log('e', `スプライト${SprID}に${SouID}という音源は見つかりませんでした`);
+			return;
+		}
+	}
+	return List;
+}
+NDT.Spr.Ast.Sou.Index = function(SprID, SouID) {
+	const SD = NDT.Spr.Ast.Sou;
+	return SD.All(SprID).indexOf(SD.Get(SprID, SouID));
+}
+NDT.Spr.Ast.Sou.Add = async function(SprID, SouName, URL) {
+    ChkType('s', URL);
+	const targetId = NDT.Spr.Get(SprID).id;
+	const Str = NDT.RT.storage;
+
+	const res = await fetch(URL);
+	const buffer = await res.arrayBuffer();
+
+	const asset = Str.createAsset(
+		Str.AssetType.Sound,
+		Str.DataFormat.MP3,
+		new Uint8Array(buffer),
+		null,
+		true
+	);
+
+	try {
+		await NDT.VM.addSound({
+				asset,
+				md5: asset.assetId + "." + asset.dataFormat,
+				name: SouName,
+			},
+			targetId
+		);
+	} catch (e) {
+		Log('e', e);
+	}
+}
+NDT.Spr.Ast.Sou.Delete = function(SprID, SouID) {
+	const target = NDT.Spr.Get(SprID);
+	const soundIndex = NDT.Spr.Ast.Sou.Index(SprID, SouID);
+	if (soundIndex < 0) return;
+
+	if (target.sprite.sounds.length > 0) {
+		target.deleteSound(soundIndex);
+	}
+}
+NDT.Spr.Ast.Sou.Rename = function(SprID, SouID, NewName) {
+	const target = NDT.Spr.Get(SprID);
+	const soundIndex = NDT.Spr.Ast.Sou.Index(SprID, SouID);
+	if (soundIndex < 0) return;
+
+	if (target.sprite.sounds.length > 0) {
+		target.renameSound(soundIndex, NewName);
+	}
+}
+NDT.Spr.Ast.Sou.Export = function(SprID, SouID) {
+	return NDT.Spr.Ast.Sou.Get(SprID, SouID).asset.encodeDataURI();
 }
 
 NDT.Spr.Pos.Get = function(SprID) {
@@ -487,6 +696,7 @@ function Abbreviation(code, ...link) {
 }
 // ログ
 function Log(type = 'log', output) {
+    if (NDT.Option.DisLog) return;
     const lstype = Abbreviation(
         type,
         'log',

@@ -22,8 +22,9 @@ Issueの立て方わからんかったらScratchかDiscordで伝えてくださ�
 - ``NDT.Option`` - 設定
 - ``NDT.Info`` - NDTの情報
 # 設定できる項目
-- ``NDT.Option.DisCheck`` - Boolean(真偽値) - 有効にすると実行時型チェックを行わないようになります。軽量化に。
-- ``NDT.Option.DisNDTEvent`` - Boolean(真偽値) - 有効にするとNDTEventのイベント送信がなくなります。こちらも軽量化に。
+- ``DisCheck`` - Boolean(真偽値) - 有効にすると実行時型チェックを行わないようになります。軽量化に。
+- ``DisNDTEvent`` - Boolean(真偽値) - 有効にするとNDTEventのイベント送信がなくなります。こちらも軽量化に。
+- ``DisLog`` - Boolean(真偽値) - 有効にするとNDTLogが無効化されます。邪魔ったるいときに。
 # 型チェックについて
 NDTは関数を実行するときに一部の引数の型を確認します。  
 型が間違っていた場合エラーを吐きます(処理は止めません)  
