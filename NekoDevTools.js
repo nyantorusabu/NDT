@@ -20,8 +20,8 @@ NDT.RT = NDT.VM.runtime;
 
 // Info/Option
 NDT.Info = {};
-NDT.Info.Ver = '0.1.6';
-NDT.Info.Message = `NDT.Project.Exportが動作しない問題を修正`;
+NDT.Info.Ver = '0.1.7';
+NDT.Info.Message = `NDTEventのAFTERがBEFOREと同じタイミングで発火していた問題を多分修正`;
 NDT.Option = {};
 NDT.Option.DisCheck = false;
 NDT.Option.DisNDTEvent = false;
@@ -75,6 +75,7 @@ NDT.VM.addListener('targetsUpdate', (data) => {
 
 // NDTEvent
 NDT.SC = {};
+NDT.SC.AFTER_Event = [];
 
 class NDTEvent extends Event {
 	constructor(EveID, Args = {}) {
@@ -118,6 +119,12 @@ NDT.RT._step = function() {
     NDTVariable();
     NDT.SC.Step.call(this);
     NDT.NDTEvent.Dispatch('STEP_AFTER');
+    if (NDT.SC.AFTER_Event.length > 0) {
+        for(const now of NDT.SC.AFTER_Event) {
+            NDT.NDTEvent.Dispatch(now.id, now.args);
+        }
+        NDT.SC.AFTER_Event.length = 0;
+    }
 }
 
 NDT.SC.StartHats = NDT.RT.startHats;
@@ -128,11 +135,15 @@ NDT.RT.startHats = function(HatOpc, Option, Target) {
     const Mes = (HatID == 'EVENT_WHENBROADCASTRECEIVED');
     const Flag = (HatID == 'EVENT_WHENFLAGCLICKED');
     const Eve = NDT.NDTEvent.Dispatch;
-    if (Mes) Eve('MESSAGE_BEFORE', {MesID: Option.BROADCAST_OPTION.toUpperCase(), SprID: SprID})
-    if (Flag) Eve('FLAG_BEFORE', {Option: Option, SprID: SprID})
+    if (Mes) {
+        Eve('MESSAGE_BEFORE', {MesID: Option.BROADCAST_OPTION.toUpperCase(), SprID: SprID})
+        NDT.SC.AFTER_Event.push({id: 'MESSAGE_AFTER', args: {MesID: Option.BROADCAST_OPTION.toUpperCase(), SprID: SprID}})
+    }
+    if (Flag) {
+        Eve('FLAG_BEFORE', {Option: Option, SprID: SprID})
+        NDT.SC.AFTER_Event.push({id: 'FLAG_AFTER', args: {Option: Option, SprID: SprID}})
+    }
     const Res = NDT.SC.StartHats.call(this, HatOpc, Option, Target);
-    if (Mes) Eve('MESSAGE_AFTER', {MesID: Option.BROADCAST_OPTION.toUpperCase(), SprID: SprID})
-    if (Flag) Eve('FLAG_AFTER', {Option: Option, SprID: SprID})
     return Res;
 }
 
