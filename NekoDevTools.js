@@ -20,7 +20,7 @@ NDT.RT = NDT.VM.runtime;
 
 // Info/Option
 NDT.Info = {};
-NDT.Info.Ver = '0.1.3';
+NDT.Info.Ver = '0.1.4';
 NDT.Info.Message = `NDT.Project.Exportが動作しない問題を修正`;
 NDT.Option = {};
 NDT.Option.DisCheck = false;
@@ -173,7 +173,7 @@ NDT.Pro.Load.ID = async function(ProID) {
     }
 }
 NDT.Pro.Export = async function() {
-    const data = (await NDT.VM.saveProjectSb3()).toBase64();
+    const data = Base64.encodeURI((await NDT.VM.saveProjectSb3()));
     return `data:application/zip;base64,${data}`
 }
 // Sprite
