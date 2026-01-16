@@ -24,8 +24,8 @@
 
 	// Info/Option
 	NDT.Info = {};
-	NDT.Info.Ver = '0.1.8';
-	NDT.Info.Message = `NDT.Spr.Uploadを削除し代わりにNDT.Uploadを追加`;
+	NDT.Info.Ver = '0.1.9';
+	NDT.Info.Message = `NDT.Spr.Addが追加したスプライトのtargetを返却するように変更`;
 	NDT.Option = {};
 	NDT.Option.DisCheck = false;
 	NDT.Option.DisNDTEvent = false;
@@ -242,7 +242,9 @@
 			await NDT.VM.addSprite(data);
 		} catch (e) {
 			Log('e', e);
+			return;
 		}
+		return NDT.Spr.All[NDT.Spr.All.length - 1];
 	};
 	NDT.Spr.Delete = function (SprID) {
 		ChkType('s', SprID);
@@ -355,7 +357,9 @@
 			);
 		} catch (e) {
 			Log('e', e);
+			return;
 		}
+		NDT.Spr.Ast.Cos.All(SprID)[NDT.Spr.Ast.Cos.All(SprID).length - 1];
 	};
 	NDT.Spr.Ast.Cos.Delete = function (SprID, CosID) {
 		const target = NDT.Spr.Get(SprID);
@@ -435,7 +439,9 @@
 			);
 		} catch (e) {
 			Log('e', e);
+			return;
 		}
+		NDT.Spr.Ast.Sou.All(SprID)[NDT.Spr.Ast.Sou.All(SprID).length - 1];
 	};
 	NDT.Spr.Ast.Sou.Delete = function (SprID, SouID) {
 		const target = NDT.Spr.Get(SprID);
