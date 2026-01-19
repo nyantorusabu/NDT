@@ -7,7 +7,7 @@
 		NDT.VM = vm;
 	} else if (document.getElementById('app')) {
 		NDT.VM = Object.values(
-			document.getElementById('app')
+			document.getElementById('app'),
 		)[0].child.updateQueue.lastEffect.deps[1].scratchGui.vm;
 	} else {
 		NDT.VM = null;
@@ -15,7 +15,7 @@
 	if (!NDT.VM) {
 		Log(
 			'e',
-			'ScratchVMへのアクセスに失敗しました!\nScratchVMの仕様が変更された可能性があります'
+			'ScratchVMへのアクセスに失敗しました!\nScratchVMの仕様が変更された可能性があります',
 		);
 		NDT = undefined;
 		return;
@@ -195,13 +195,13 @@
 	NDT.Pro.Load.ID = async function (ProID) {
 		ChkType('n', ProID);
 		const res = await fetch(
-			`https://trampoline.turbowarp.org/api/projects/${ProID}`
+			`https://trampoline.turbowarp.org/api/projects/${ProID}`,
 		);
 		const data = await res.json();
 		const token = data.project_token;
 		try {
 			await NDT.Pro.Load.URL(
-				`https://projects.scratch.mit.edu/${ProID}?token=${token}`
+				`https://projects.scratch.mit.edu/${ProID}?token=${token}`,
 			);
 		} catch (e) {
 			Log('e', e);
@@ -256,7 +256,7 @@
 		ChkType('s', NewName);
 		NDT.Spr.Get(SprID).name = NewName;
 	};
-	(NDT.Spr.Visible = function (SprID, Show = null) {
+	((NDT.Spr.Visible = function (SprID, Show = null) {
 		const Spr = NDT.Spr.Get(SprID);
 		if (!Spr) return;
 		if (Show !== null) {
@@ -271,7 +271,7 @@
 				Spr.size = ToSize;
 			}
 			return Spr.size;
-		});
+		}));
 
 	NDT.Spr.Ast.Cos.All = function (SprID) {
 		return NDT.Spr.Get(SprID).sprite.costumes;
@@ -291,7 +291,7 @@
 			if (!List) {
 				Log(
 					'e',
-					`スプライト${SprID}に${CosID}というコスチュームは見つかりませんでした`
+					`スプライト${SprID}に${CosID}というコスチュームは見つかりませんでした`,
 				);
 				return;
 			}
@@ -310,14 +310,10 @@
 		const res = await fetch(URL);
 		const blob = await res.blob();
 
-		if (!(blob.type === 'image/png' || blob.type === 'image/svg+xml')) {
-			Log('e', `無効な画像形式のファイルを読み込みました: ${blob.type}`);
-			return;
-		}
 		const assetType =
-			blob.type === 'image/png'
-				? Str.AssetType.ImageBitmap
-				: Str.AssetType.ImageVector;
+			blob.type === 'image/svg+xml'
+				? Str.AssetType.ImageVector
+				: Str.AssetType.ImageBitmap;
 
 		const dataType =
 			blob.type === 'image/svg+xml'
@@ -331,8 +327,8 @@
 				fr.onerror = () =>
 					reject(
 						new Error(
-							`ArrayBufferの読み込みに失敗しました: ${fr.error}`
-						)
+							`ArrayBufferの読み込みに失敗しました: ${fr.error}`,
+						),
 					);
 				fr.readAsArrayBuffer(blob);
 			});
@@ -342,7 +338,7 @@
 				dataType,
 				new Uint8Array(arrayBuffer),
 				null,
-				true
+				true,
 			);
 			const md5ext = `${asset.assetId}.${asset.dataFormat}`;
 
@@ -353,7 +349,7 @@
 					md5ext,
 					name: CosName,
 				},
-				targetId
+				targetId,
 			);
 		} catch (e) {
 			Log('e', e);
@@ -401,7 +397,7 @@
 			if (!List) {
 				Log(
 					'e',
-					`スプライト${SprID}に${SouID}という音源は見つかりませんでした`
+					`スプライト${SprID}に${SouID}という音源は見つかりませんでした`,
 				);
 				return;
 			}
@@ -425,7 +421,7 @@
 			Str.DataFormat.MP3,
 			new Uint8Array(buffer),
 			null,
-			true
+			true,
 		);
 
 		try {
@@ -435,7 +431,7 @@
 					md5: asset.assetId + '.' + asset.dataFormat,
 					name: SouName,
 				},
-				targetId
+				targetId,
 			);
 		} catch (e) {
 			Log('e', e);
@@ -527,7 +523,7 @@
 		NDT.RT.startHats(
 			'event_whenbroadcastreceived',
 			{ BROADCAST_OPTION: Message },
-			target
+			target,
 		);
 	};
 
@@ -554,7 +550,7 @@
 			if (!Out) {
 				Log(
 					'e',
-					`スプライト${SprID}に${VarID}というローカル変数は見つかりませんでした`
+					`スプライト${SprID}に${VarID}というローカル変数は見つかりませんでした`,
 				);
 				return;
 			}
@@ -605,7 +601,7 @@
 			if (!Out) {
 				Log(
 					'e',
-					`スプライト${SprID}に${VarID}というローカルリストは見つかりませんでした`
+					`スプライト${SprID}に${VarID}というローカルリストは見つかりませんでした`,
 				);
 				return;
 			}
@@ -719,7 +715,7 @@
 			if (!Out) {
 				Log(
 					'e',
-					`${VarID}というグローバルリストは見つかりませんでした`
+					`${VarID}というグローバルリストは見つかりませんでした`,
 				);
 				return;
 			}
@@ -780,12 +776,12 @@
 			'Undefined',
 			'Null',
 			'Object',
-			'Function'
+			'Function',
 		);
 		if ((typeof data).toLowerCase() !== lstype.toLowerCase()) {
 			Log(
 				'e',
-				`引数に指定できない型が指定されています!:\n入力=>${typeof data} 要求=>${lstype}`
+				`引数に指定できない型が指定されています!:\n入力=>${typeof data} 要求=>${lstype}`,
 			);
 		}
 	}
