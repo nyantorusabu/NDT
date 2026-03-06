@@ -24,8 +24,8 @@
 
 	// Info/Option
 	NDT.Info = {};
-	NDT.Info.Ver = '0.1.10';
-	NDT.Info.Message = `NDT.Spr.Asset.*.Addが追加したアセットのデータを返却するように変更`;
+	NDT.Info.Ver = '0.1.11';
+	NDT.Info.Message = `試験的にNDT.Spr.UpdateとNDT.Spr.Ast.Cos.Updateを追加`;
 	NDT.Option = {};
 	NDT.Option.DisCheck = false;
 	NDT.Option.DisNDTEvent = false;
@@ -256,22 +256,34 @@
 		ChkType('s', NewName);
 		NDT.Spr.Get(SprID).name = NewName;
 	};
-	((NDT.Spr.Visible = function (SprID, Show = null) {
+	NDT.Spr.Visible = function (SprID, Show = null) {
 		const Spr = NDT.Spr.Get(SprID);
 		if (!Spr) return;
 		if (Show !== null) {
 			Spr.visible = Show;
+			NDT.Spr.Update(SprID);
 		}
 		return Spr.visible;
-	}),
-		(NDT.Spr.Size = function (SprID, ToSize = null) {
-			const Spr = NDT.Spr.Get(SprID);
-			if (!Spr) return;
-			if (ToSize !== null) {
-				Spr.size = ToSize;
-			}
-			return Spr.size;
-		}));
+	};
+	NDT.Spr.Size = function (SprID, ToSize = null) {
+		const Spr = NDT.Spr.Get(SprID);
+		if (!Spr) return;
+		if (ToSize !== null) {
+			Spr.size = ToSize;
+			NDT.Spr.Update(SprID);
+		}
+		return Spr.size;
+	};
+	NDT.Spr.Update = function (SprID) {
+		const target = NDT.Spr.Get(SprID);
+		if (!target) return;
+		const id = target.drawableID;
+		vm.renderer.updateDrawableProperties(id, {
+			position: [target.x, target.y],
+			visible: target.visible,
+		});
+		target.setDirection(target.direction);
+	};
 
 	NDT.Spr.Ast.Cos.All = function (SprID) {
 		return NDT.Spr.Get(SprID).sprite.costumes;
@@ -380,6 +392,34 @@
 	NDT.Spr.Ast.Cos.Export = function (SprID, CosID) {
 		return NDT.Spr.Ast.Cos.Get(SprID, CosID).asset.encodeDataURI();
 	};
+	NDT.Spr.Ast.Cos.Update = async function (SprID, CosID) {
+		const target = NDT.Spr.Get(SprID);
+		if (!target) return;
+		const costume = NDT.Spr.Ast.Cos.Get(SprID, CosID);
+		if (!costume) return;
+		if (costume.dataFormat == 'svg') {
+			NDT.RT.renderer.updateSVGSkin(
+				costume.skinId,
+				costume.asset.decodeText(),
+				[costume.rotationCenterX, costume.rotationCenterY],
+			);
+		} else {
+			const bitRes = costume.bitmapResolution;
+			const img = new Image();
+
+			await new Promise((resolve, reject) => {
+				img.onload = resolve;
+				img.onerror = () =>
+					reject(new Error('コスチュームの読み込みに失敗しました'));
+				img.src = costume.asset.encodeDataURI();
+			});
+
+			NDT.RT.renderer.updateBitmapSkin(costume.skinId, img, bitRes, [
+				costume.rotationCenterX / bitRes,
+				costume.rotationCenterY / bitRes,
+			]);
+		}
+	};
 
 	NDT.Spr.Ast.Sou.All = function (SprID) {
 		return NDT.Spr.Get(SprID).sprite.sounds;
@@ -475,6 +515,7 @@
 		if (!Spr) return;
 		if (ToX !== null) Spr.x = ToX;
 		if (ToY !== null) Spr.y = ToY;
+		NDT.Spr.Update(SprID);
 		return { x: Spr.x, y: Spr.y };
 	};
 	NDT.Spr.Pos.MoveXY = function (SprID, StepX = null, StepY = null) {
@@ -482,6 +523,7 @@
 		if (!Spr) return;
 		if (StepX !== null) Spr.x += StepX;
 		if (StepY !== null) Spr.y += StepY;
+		NDT.Spr.Update(SprID);
 		return { x: Spr.x, y: Spr.y };
 	};
 	NDT.Spr.Pos.Move = function (SprID, Steps) {
@@ -492,18 +534,25 @@
 		const StepY = Steps * Math.sin(Radians);
 		Spr.x += StepX;
 		Spr.y += StepY;
+		NDT.Spr.Update(SprID);
 		return { x: Spr.x, y: Spr.y };
 	};
 	NDT.Spr.Pos.SetDir = function (SprID, Dir = null) {
 		const Spr = NDT.Spr.Get(SprID);
 		if (!Spr) return;
-		if (Dir !== null) Spr.direction = Dir;
+		if (Dir !== null) {
+			Spr.direction = Dir;
+			NDT.Spr.Update(SprID);
+		}
 		return { Dir: direction };
 	};
 	NDT.Spr.Pos.Turn = function (SprID, Dir) {
 		const Spr = NDT.Spr.Get(SprID);
 		if (!Spr) return;
-		if (Dir) Spr.direction += Dir;
+		if (Dir) {
+			Spr.direction += Dir;
+			NDT.Spr.Update(SprID);
+		}
 		return { Dir: Spr.direction };
 	};
 
